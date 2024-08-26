@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="img/iconNav.png" type="image/x-icon">
     <title>Campus Link - UFRPE</title>
     <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
             background-image: linear-gradient(to right, rgb(20, 147, 220), rgb(17, 54, 71));
         }
-        .box {
+        .caixa {
             color: white;
             position: absolute;
             top: 50%;
@@ -21,10 +22,10 @@
             border-radius: 15px;
             width: 20%;
         }
-        .inputBox {
+        .caixaInput {
             position: relative;
         }
-        .inputUser {
+        .inputUsuario {
             background: none;
             border: none;
             border-bottom: 1px solid white;
@@ -41,13 +42,13 @@
             pointer-events: none;
             transition: .5s;
         }
-        .inputUser:focus ~ .labelInput,
-        .inputUser:valid ~ .labelInput {
+        .inputUsuario:focus ~ .labelInput,
+        .inputUsuario:valid ~ .labelInput {
             top: -20px;
             font-size: 12px;
             color: dodgerblue;
         }
-        #submit {
+        #botaoCadastrar {
             background-image: linear-gradient(to right, rgb(0, 92, 197), rgb(90, 20, 220));
             width: 100%;
             border: none;
@@ -57,80 +58,108 @@
             cursor: pointer;
             border-radius: 10px;
         }
-        #submit:hover {
+        #botaoCadastrar:hover {
             background-image: linear-gradient(to right, rgb(0, 80, 172), rgb(80, 19, 195));
         }
-        .error-message {
+        .mensagemErro {
             color: red;
             font-size: 14px;
             display: none;
             margin-top: 10px;
         }
-        .anchor-container {
+        .containerAncora {
+            padding-top: 15px;
             text-align: center;
-            margin-top: 20px;
         }
-        .anchor-container a {
-            text-decoration: none;
+        a {
             color: white;
+            text-decoration: none;
             font-size: 14px;
+        }
+        a:hover {
+            text-decoration: underline;
+            color: rgb(200, 200, 200);
         }
     </style>
 </head>
 <body>
-    <div class="box">
-        <form id="registrationForm">
+    <div class="caixa">
+        <form id="formularioCadastro" action="config.php" method="POST">
             <br>
-            <div class="inputBox">
-                <input type="email" name="email" id="email" class="inputUser" required pattern="[a-z0-9._%+-]+@ufrpe\.br$" title="O e-mail deve ser do domínio @ufrpe.br">
-                <label for="email" class="labelInput">Email</label>
+            <div class="caixaInput">
+                <input type="text" name="nome" id="nome" class="inputUsuario" required>
+                <label for="nome" class="labelInput">Nome de Usuário</label>
             </div>
             <br><br>
-            <div class="inputBox">
-                <input type="password" name="senha" id="senha" class="inputUser" required>
+            <div class="caixaInput">
+                <input type="email" name="email" id="email" class="inputUsuario" required>
+                <label for="email" class="labelInput">Email</label>
+                <div class="mensagemErro" id="erroEmail">O e-mail deve ser do domínio @ufrpe.br</div>
+            </div>
+            <br><br>
+            <div class="caixaInput">
+                <input type="password" name="senha" id="senha" class="inputUsuario" required>
                 <label for="senha" class="labelInput">Senha</label>
             </div>
             <br><br>
-            <div class="inputBox">
-                <input type="password" name="confirmacao_senha" id="confirmacao_senha" class="inputUser" required>
+            <div class="caixaInput">
+                <input type="password" name="confSenha" id="confirmacao_senha" class="inputUsuario" required>
                 <label for="confirmacao_senha" class="labelInput">Confirmação de Senha</label>
             </div>
-            <div class="error-message" id="error-message">Senhas não coincidem</div>
+            <div class="mensagemErro" id="erroSenha">Senhas não coincidem</div>
             <br><br>
-            <div class="inputBox">
-                <input type="text" name="faculdade" id="faculdade" class="inputUser" required>
+            <div class="caixaInput">
+                <input type="text" name="faculdade" id="faculdade" class="inputUsuario" required>
                 <label for="faculdade" class="labelInput">Faculdade</label>
             </div>
             <br><br>
-            <div class="inputBox">
-                <input type="text" name="curso" id="curso" class="inputUser" required>
+            <div class="caixaInput">
+                <input type="text" name="curso" id="curso" class="inputUsuario" required>
                 <label for="curso" class="labelInput">Curso</label>
             </div>
             <br><br>
-            <div class="inputBox">
-                <input type="text" name="periodo" id="periodo" class="inputUser" required>
+            <div class="caixaInput">
+                <input type="text" name="periodo" id="periodo" class="inputUsuario" required>
                 <label for="periodo" class="labelInput">Período</label>
             </div>
             <br><br>
-            <input type="submit" name="submit" id="submit" value="Cadastrar">
+            <input type="submit" name="botaoCadastrar" id="botaoCadastrar" value="Cadastrar">
         </form>
-        <div class="anchor-container">
+        <div class="containerAncora">
             <a href="index.html">Voltar</a>
         </div>
     </div>
 
     <script>
-        const form = document.getElementById('registrationForm');
+        const form = document.getElementById('formularioCadastro');
+        const email = document.getElementById('email');
         const senha = document.getElementById('senha');
         const confirmacaoSenha = document.getElementById('confirmacao_senha');
-        const errorMessage = document.getElementById('error-message');
+        const erroEmail = document.getElementById('erroEmail');
+        const erroSenha = document.getElementById('erroSenha');
 
         form.addEventListener('submit', function(event) {
-            if (senha.value !== confirmacaoSenha.value) {
-                event.preventDefault();
-                errorMessage.style.display = 'block';
+            let emailValido = email.value.endsWith('@ufrpe.br');
+            let senhasIguais = senha.value === confirmacaoSenha.value;
+
+            let valido = true;
+
+            if (!emailValido) {
+                erroEmail.style.display = 'block';
+                valido = false;
             } else {
-                errorMessage.style.display = 'none';
+                erroEmail.style.display = 'none';
+            }
+
+            if (!senhasIguais) {
+                erroSenha.style.display = 'block';
+                valido = false;
+            } else {
+                erroSenha.style.display = 'none';
+            }
+
+            if (!valido) {
+                event.preventDefault();
             }
         });
     </script>

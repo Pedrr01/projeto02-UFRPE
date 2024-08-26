@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="img/iconNav.png" type="image/x-icon">
     <title>Campus Link - UFRPE</title>
     <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
             background-image: linear-gradient(to right, rgb(20, 147, 220), rgb(17, 54, 71));
         }
-        .box {
+        .caixa {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -34,20 +35,20 @@
             background-color: #f2f2f2;
         }
         button {
-            background-color: rgb(236, 236, 236);
+            background-image: linear-gradient(to right, rgb(0, 92, 197), rgb(90, 20, 220));
             border: none;
             padding: 15px;
             width: 100%;
             border-radius: 10px;
-            color: rgb(0, 0, 0);
+            color: rgb(255, 255, 255);
             font-size: 15px;
             margin-bottom: 20px;
         }
         button:hover {
             cursor: pointer;
-            background-color: rgb(200, 200, 200);
+            background-image: linear-gradient(to right, rgb(0, 80, 172), rgb(80, 19, 195));
         }
-        .link-container {
+        .container-link {
             text-align: center;
         }
         a {
@@ -62,15 +63,15 @@
     </style>
 </head>
 <body>
-    <div class="box">
+    <div class="caixa">
         <h1>Login</h1>
         <input type="text" placeholder="Nome">
         <br>
         <input type="password" placeholder="Senha">
         <br>
         <button>Enviar</button>
-        <div class="link-container">
-            <a href="form.html">Cadastrar</a>
+        <div class="container-link">
+            <a href="forms.html">Cadastrar</a>
         </div>
     </div>
 </body>
