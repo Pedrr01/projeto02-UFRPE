@@ -64,7 +64,6 @@
         .mensagemErro {
             color: red;
             font-size: 14px;
-            display: none;
             margin-top: 10px;
         }
         .containerAncora {
@@ -94,7 +93,10 @@
             <div class="caixaInput">
                 <input type="email" name="email" id="email" class="inputUsuario" required>
                 <label for="email" class="labelInput">Email</label>
-                {% if error and 'e-mail' in error %}
+                {% if error and 'domínio' in error %}
+                    <div class="mensagemErro">{{ error }}</div>
+                {% endif %}
+                {% if error and 'Usuário já cadastrado' in error %}
                     <div class="mensagemErro">{{ error }}</div>
                 {% endif %}
             </div>
@@ -107,10 +109,10 @@
             <div class="caixaInput">
                 <input type="password" name="confirm_password" id="confirmacao_senha" class="inputUsuario" required>
                 <label for="confirmacao_senha" class="labelInput">Confirmação de Senha</label>
+                {% if error and 'Senhas' in error %}
+                    <div class="mensagemErro">{{ error }}</div>
+                {% endif %}
             </div>
-            {% if error and 'Senhas' in error %}
-                <div class="mensagemErro">{{ error }}</div>
-            {% endif %}
             <br><br>
             <div class="caixaInput">
                 <input type="text" name="faculdade" id="faculdade" class="inputUsuario" required>
@@ -134,36 +136,5 @@
         </div>
     </div>
 
-    <script>
-        const form = document.getElementById('formularioCadastro');
-        const email = document.getElementById('email');
-        const senha = document.getElementById('senha');
-        const confirmacaoSenha = document.getElementById('confirmacao_senha');
-        const erroEmail = document.getElementById('erroEmail');
-        const erroSenha = document.getElementById('erroSenha');
-
-        form.addEventListener('submit', function(event) {
-            let valido = true;
-            if (!email.value.endsWith('@ufrpe.br')) {
-                erroEmail.textContent = "O e-mail deve ser do domínio @ufrpe.br";
-                erroEmail.style.display = 'block';
-                valido = false;
-            } else {
-                erroEmail.style.display = 'none';
-            }
-
-            if (senha.value !== confirmacaoSenha.value) {
-                erroSenha.textContent = "Senhas não coincidem";
-                erroSenha.style.display = 'block';
-                valido = false;
-            } else {
-                erroSenha.style.display = 'none';
-            }
-
-            if (!valido) {
-                event.preventDefault();
-            }
-        });
-    </script>
 </body>
 </html>

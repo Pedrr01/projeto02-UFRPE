@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
-app.secret_key = '1110' 
+app.secret_key = '1110'
 
 import sqlite3
 import os
@@ -23,18 +23,19 @@ def register():
         password = request.form['password']
         confirm_password = request.form['confirm_password']
 
-        if password != confirm_password:
-            return render_template('forms.html', error="Senhas não coincidem")
-        if not email.endswith('@ufrpe.br'):
-            return render_template('forms.html', error="O e-mail deve ser do domínio @ufrpe.br")
-
         conn = get_db_connection()
         cursor = conn.cursor()
+
+        # Verificar se o e-mail já está cadastrado
         cursor.execute('SELECT * FROM users WHERE email = ?', (email,))
         user = cursor.fetchone()
 
         if user:
             return render_template('forms.html', error="Usuário já cadastrado")
+        if password != confirm_password:
+            return render_template('forms.html', error="Senhas não coincidem")
+        if not email.endswith('@ufrpe.br'):
+            return render_template('forms.html', error="O e-mail deve ser do domínio @ufrpe.br")
 
         cursor.execute('INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
                        (name, email, password))
