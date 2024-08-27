@@ -84,29 +84,33 @@
 </head>
 <body>
     <div class="caixa">
-        <form id="formularioCadastro" action="config.php" method="POST">
+        <form id="formularioCadastro" action="/register" method="POST">
             <br>
             <div class="caixaInput">
-                <input type="text" name="nome" id="nome" class="inputUsuario" required>
+                <input type="text" name="name" id="nome" class="inputUsuario" required>
                 <label for="nome" class="labelInput">Nome de Usuário</label>
             </div>
             <br><br>
             <div class="caixaInput">
                 <input type="email" name="email" id="email" class="inputUsuario" required>
                 <label for="email" class="labelInput">Email</label>
-                <div class="mensagemErro" id="erroEmail">O e-mail deve ser do domínio @ufrpe.br</div>
+                {% if error and 'e-mail' in error %}
+                    <div class="mensagemErro">{{ error }}</div>
+                {% endif %}
             </div>
             <br><br>
             <div class="caixaInput">
-                <input type="password" name="senha" id="senha" class="inputUsuario" required>
+                <input type="password" name="password" id="senha" class="inputUsuario" required>
                 <label for="senha" class="labelInput">Senha</label>
             </div>
             <br><br>
             <div class="caixaInput">
-                <input type="password" name="confSenha" id="confirmacao_senha" class="inputUsuario" required>
+                <input type="password" name="confirm_password" id="confirmacao_senha" class="inputUsuario" required>
                 <label for="confirmacao_senha" class="labelInput">Confirmação de Senha</label>
             </div>
-            <div class="mensagemErro" id="erroSenha">Senhas não coincidem</div>
+            {% if error and 'Senhas' in error %}
+                <div class="mensagemErro">{{ error }}</div>
+            {% endif %}
             <br><br>
             <div class="caixaInput">
                 <input type="text" name="faculdade" id="faculdade" class="inputUsuario" required>
@@ -126,7 +130,7 @@
             <input type="submit" name="botaoCadastrar" id="botaoCadastrar" value="Cadastrar">
         </form>
         <div class="containerAncora">
-            <a href="index.html">Voltar</a>
+            <a href="/">Voltar</a>
         </div>
     </div>
 
@@ -139,19 +143,17 @@
         const erroSenha = document.getElementById('erroSenha');
 
         form.addEventListener('submit', function(event) {
-            let emailValido = email.value.endsWith('@ufrpe.br');
-            let senhasIguais = senha.value === confirmacaoSenha.value;
-
             let valido = true;
-
-            if (!emailValido) {
+            if (!email.value.endsWith('@ufrpe.br')) {
+                erroEmail.textContent = "O e-mail deve ser do domínio @ufrpe.br";
                 erroEmail.style.display = 'block';
                 valido = false;
             } else {
                 erroEmail.style.display = 'none';
             }
 
-            if (!senhasIguais) {
+            if (senha.value !== confirmacaoSenha.value) {
+                erroSenha.textContent = "Senhas não coincidem";
                 erroSenha.style.display = 'block';
                 valido = false;
             } else {
