@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="img/iconNav.png" type="image/x-icon">
+    <title>Campus Link - UFRPE</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-image: linear-gradient(to right, rgb(20, 147, 220), rgb(17, 54, 71));
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+        .user-info {
+            font-size: 18px;
+        }
+        .user-info:hover{
+            cursor: pointer;
+        }
+        .site-title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .settings-btn {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        .settings-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .feed {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .disciplina {
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 15px;
+            width: 300px;
+            color: white;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        .disciplina:hover {
+            transform: scale(1.05);
+        }
+        .disciplina h3 {
+            margin-bottom: 10px;
+        }
+        .disciplina a {
+            display: inline-block;
+            margin-top: 10px;
+            color: white;
+            text-decoration: none;
+            background-image: linear-gradient(to right, rgb(0, 92, 197), rgb(90, 20, 220));
+            padding: 10px 20px;
+            border-radius: 10px;
+            transition: background 0.3s;
+        }
+        .disciplina a:hover {
+            background-image: linear-gradient(to right, rgb(0, 80, 172), rgb(80, 19, 195));
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="user-info">Nome do Usuário</div>
+        <div class="site-title">Campus Link</div>
+        <button class="settings-btn">Configurações</button>
+    </div>
+    <div class="container">
+        <div class="feed">
+            <div class="disciplina">
+                <h3>Disciplina 01</h3>
+                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+                <a href="#">Acessar</a>
+            </div>
+            <div class="disciplina">
+                <h3>Disciplina 02</h3>
+                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+                <a href="#">Acessar</a>
+            </div>
+            <div class="disciplina">
+                <h3>Disciplina 03</h3>
+                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+                <a href="#">Acessar</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
