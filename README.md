@@ -7,5 +7,5 @@ O CampusLink é um projeto voltado para a criação de uma plataforma colaborati
 - Flavia do Nascimento Simoes
 - Matues Omar Coelho dos Santos
 - Rodrigo Dias da Paz Santos
-- Marcel Gustavo de Barros
+- Marcel Gustavo de Barros Araujo
 - Fellype Meneses Vasconcelos
