@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 
 app = Flask(__name__)
 app.secret_key = '1110'
@@ -61,9 +61,24 @@ def login():
     conn.close()
 
     if user:
-        return redirect(url_for('dashboard', user_id=user['id']))  
+        session['user_id'] = user['id']  # Armazenar o ID do usuário na sessão
+        return redirect(url_for('feed'))
     else:
         return render_template('index.html', error="Conta não cadastrada")
+
+@app.route('/feed')
+def feed():
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+
+    user_id = session['user_id']
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    user = cursor.fetchone()
+    conn.close()
+
+    return render_template('feed.html', user=user)
 
 @app.route('/dashboard/<int:user_id>', methods=['GET', 'POST'])
 def dashboard(user_id):
@@ -104,6 +119,11 @@ def edit(user_id):
     user = cursor.fetchone()
     conn.close()
     return render_template('editar.html', user=user)
+
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -86,9 +86,10 @@
 </head>
 <body>
     <div class="header">
-        <div class="user-info">Nome do Usuário</div>
+        <div class="user-info">{{ user['name'] }}</div>
         <div class="site-title">CampusLink</div>
-        <button class="settings-btn">Configurações</button>
+        <a href="{{ url_for('dashboard', user_id=session['user_id']) }}" class="settings-btn">Configurações</a>
+        <a href="{{ url_for('logout') }}" class="settings-btn">Sair</a>
     </div>
     <div class="container">
         <div class="feed">

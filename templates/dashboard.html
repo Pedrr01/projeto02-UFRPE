@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="iconNav.png" type="image/x-icon">
+    <link rel="icon" href="img/iconNav.png" type="image/x-icon">
     <title>Dashboard</title>
     <style>
         body {
@@ -24,19 +24,36 @@
             color: white;
             text-align: center;
         }
-        button {
+        a{
             background-image: linear-gradient(to right, rgb(0, 92, 197), rgb(90, 20, 220));
             border: none;
             padding: 15px;
-            width: 100%;
+            width: 240px; /* Ensure width fits within the container */
             border-radius: 10px;
             color: rgb(255, 255, 255);
             font-size: 15px;
             margin-bottom: 10px;
+            display: inline-block; /* Ensure consistent behavior */
+            text-decoration: none; /* Remove underline for links */
+
+        } button {
+            background-image: linear-gradient(to right, rgb(0, 92, 197), rgb(90, 20, 220));
+            border: none;
+            padding: 15px;
+            width: 200px; /* Ensure width fits within the container */
+            border-radius: 10px;
+            color: rgb(255, 255, 255);
+            font-size: 15px;
+            margin-bottom: 10px;
+            display: inline-block; /* Ensure consistent behavior */
+            text-decoration: none; /* Remove underline for links */
         }
-        button:hover {
+        a:hover, button:hover {
             cursor: pointer;
             background-image: linear-gradient(to right, rgb(0, 80, 172), rgb(80, 19, 195));
+        }
+        button {
+            width: calc(100% - 30px); /* Ensure width fits within the container */
         }
         p {
             margin: 20px 0;
@@ -45,11 +62,9 @@
 </head>
 <body>
     <div class="container">
-        <h1>Bem-vindo, {{ user['name'] }}!</h1>
-        <p>Email: {{ user['email'] }}</p>
-
-        <form method="POST">
-            <button type="submit" name="edit">Editar Dados</button>
+        <h2>Olá, {{ user['name'] }}</h2>
+        <a href="{{ url_for('edit', user_id=user['id']) }}">Editar Perfil</a>
+        <form action="{{ url_for('dashboard', user_id=user['id']) }}" method="post" style="margin-top: 20px;">
             <button type="submit" name="delete">Excluir Conta</button>
         </form>
     </div>
