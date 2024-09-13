@@ -1,35 +1,55 @@
 <?php
 
-    if(isset($_POST['botaoCadastrar'])){
-        $nome = $_POST['nome'];
-        $email = $_POST['email'];
-        $senha = $_POST['senha'];
-        $confSenha = $_POST['confSenha'];
-        $faculdade = $_POST['faculdade'];
-        $curso = $_POST['curso'];
-        $periodo = $_POST['periodo'];
-    }
+$Nome = $Email = $senha = $confSenha = $Faculdade = $Curso = $Periodo = '';
+$NomeErro = $EmailErro = $SenhaErro = $confSenhaErro = $MensagemErro = '';
 
-    if($senha != $confSenha){
-        die('Senhas não coincidem.');
-    }
 
-    $host = 'Localhost';
+    if($_SERVER["REQUEST_METHOD"] == "POST"){
+        $Nome = $_POST['nome'];
+        $Email = $_POST['email'];
+        $Senha = $_POST['senha'];
+        $confSenha = $_POST['confsenha'];
+        $Faculdade = $_POST['faculdade'];
+        $Curso = $_POST['curso'];
+        $Periodo = $_POST['periodo'];
+
+        if (empty($Nome)) {
+            $NomeErro = 'Insira seu nome.';
+        }
+        if (empty($Email)) {
+            $EmailErro = 'Insira seu email.';
+        }
+        if (empty($Senha)) {
+            $SenhaErro = 'Insira sua senha.';
+        }
+        if ($Senha != $confSenha) {
+            $confSenhaErro = 'As senhas não coincidem.';
+        }
+
+
+if (empty($NomeErro) && empty($EmailErro) && empty($SenhaErro) && empty($confSenhaErro)) {
+
+    $host = 'localhost';
     $banco = 'campuslink';
     $user = 'root';
-    $senha_user = '';
+    $senha_banco = '';
 
-    $con = mysqli_connect($host, $user, $senha_user, $banco);
+    $con = mysqli_connect($host, $user, $senha_banco, $banco);
 
     if(!$con){
-        die('Erro na conexão' . mysqli_connect_error() );
+        die('Erro na conexão' . mysqli_connect_error());
     }
 
-    $sql = "INSERT INTO usuarios(Nome, Email, Senha, Faculdade, Curso, Periodo) VALUES('$nome', '$email', '$senha', '$faculdade', '$curso', '$periodo')";
+    $sql = "INSERT INTO usuarios(Nome, Email, Senha, Faculdade, Curso, Periodo) VALUES('$Nome', '$Email', '$Senha', '$Faculdade', '$Curso', '$Periodo')";
 
     $rs = mysqli_query($con, $sql);
 
     if($rs){
         echo"Cadastro realizado com sucesso.";
+    }else{ 
+        echo"Erro ao realizar o cadastro";
     }
-?>
+    mysqli_close($con);
+}
+    }
+
