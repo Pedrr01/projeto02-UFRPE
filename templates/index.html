@@ -65,13 +65,18 @@
 <body>
     <div class="caixa">
         <h1>Login</h1>
-        <input type="text" placeholder="Nome">
-        <br>
-        <input type="password" placeholder="Senha">
-        <br>
-        <button>Enviar</button>
+        <form action="/login" method="POST">
+            <input type="text" name="email" placeholder="E-mail" required>
+            <br>
+            <input type="password" name="password" placeholder="Senha" required>
+            <br>
+            <button type="submit">Entrar</button>
+        </form>
+        {% if error %}
+            <div style="color: red;">{{ error }}</div>
+        {% endif %}
         <div class="container-link">
-            <a href="forms.html">Cadastrar</a>
+            <a href="/register">Cadastrar</a>
         </div>
     </div>
 </body>
