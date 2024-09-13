@@ -5,7 +5,7 @@ O CampusLink é um projeto voltado para a criação de uma plataforma colaborati
 **Equipe**:
 - Pedro Vitor da Silva Alves
 - Flavia do Nascimento Simoes
-- Matues Omar Coelho dos Santos
+- Mateus Omar Coelho dos Santos
 - Rodrigo Dias da Paz Santos
 - Marcel Gustavo de Barros Araujo
 - Fellype Meneses Vasconcelos
