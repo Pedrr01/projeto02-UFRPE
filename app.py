@@ -1,10 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, session
+import sqlite3
+import os
 
 app = Flask(__name__)
 app.secret_key = '1110'
-
-import sqlite3
-import os
 
 def get_db_connection():
     conn = sqlite3.connect(os.path.join('database', 'users.db'))
@@ -62,6 +61,8 @@ def login():
 
     if user:
         session['user_id'] = user['id']  # Armazenar o ID do usuário na sessão
+        if email == 'adm@ufrpe.br':
+            return redirect(url_for('admin'))
         return redirect(url_for('feed'))
     else:
         return render_template('index.html', error="Conta não cadastrada")
@@ -119,6 +120,45 @@ def edit(user_id):
     user = cursor.fetchone()
     conn.close()
     return render_template('editar.html', user=user)
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Verificar se o usuário logado é o administrador
+    cursor.execute('SELECT * FROM users WHERE id = ?', (session['user_id'],))
+    user = cursor.fetchone()
+    
+    if user['email'] != 'adm@ufrpe.br':
+        conn.close()
+        return redirect(url_for('feed'))
+
+    if request.method == 'POST':
+        if 'delete' in request.form:
+            user_id_to_delete = request.form['delete']
+            cursor.execute('DELETE FROM users WHERE id = ?', (user_id_to_delete,))
+            conn.commit()
+    
+    cursor.execute('SELECT * FROM users')
+    users = cursor.fetchall()
+    conn.close()
+
+    return render_template('admin.html', users=users)
+
+@app.route('/admin_login', methods=['POST'])
+def admin_login():
+    email = request.form['email']
+    password = request.form['password']
+
+    if email == 'adm@ufrpe.br' and password == 'adm':
+        session['user_id'] = 1  # ID do admin, ajuste conforme necessário
+        return redirect(url_for('admin'))
+    else:
+        return redirect(url_for('index', error="Credenciais inválidas"))
 
 @app.route('/logout')
 def logout():
