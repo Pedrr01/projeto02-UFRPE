@@ -1,35 +1,92 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
-
-app = Flask(__name__)
-app.secret_key = 'your_secret_key'
-
-# Dados de exemplo para usuários cadastrados
-users = [
-    {'id': 1, 'name': 'Usuário 1', 'email': 'user1@example.com'},
-    {'id': 2, 'name': 'Usuário 2', 'email': 'user2@example.com'},
-    {'id': 3, 'name': 'Admin', 'email': 'adm@ufrpe.br'},
-]
-
-# Rota para exibir a lista de usuários
-@app.route('/admin', methods=['GET', 'POST'])
-def admin():
-    if request.method == 'POST':
-        user_id = request.form.get('delete')
-        global users
-
-        # Verifica se o usuário não é o administrador e remove
-        if user_id:
-            users = [user for user in users if str(user['id']) != user_id]
-            flash('Usuário excluído com sucesso!', 'success')
-        
-        return redirect(url_for('admin'))
-    
-    return render_template('admin.html', users=users)
-
-# Rota para logout (apenas um exemplo)
-@app.route('/logout')
-def logout():
-    return redirect(url_for('admin'))
-
-if __name__ == '__main__':
-    app.run(debug=True)
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="img/iconNav.png" type="image/x-icon">
+    <title>Painel de Administração - Campus Link</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-image: linear-gradient(to right, rgb(20, 147, 220), rgb(17, 54, 71));
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+        .site-title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .logout-btn {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            color: white;
+        }
+        .user-list {
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 15px;
+        }
+        .user {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .user button {
+            background-color: rgba(255, 0, 0, 0.5);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .user button:hover {
+            background-color: rgba(255, 0, 0, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="site-title">CampusLink - Admin</div>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Sair</a>
+    </div>
+    <div class="container">
+        <div class="user-list">
+            <h2>Usuários Cadastrados</h2>
+            {% for user in users %}
+                <div class="user">
+                    <div>{{ user['name'] }} ({{ user['email'] }})</div>
+                    {% if user['email'] != 'adm@ufrpe.br' %}
+                        <form method="POST" action="{{ url_for('admin') }}" style="display:inline;">
+                            <button type="submit" name="delete" value="{{ user['id'] }}">Excluir</button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
