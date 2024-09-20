@@ -182,5 +182,9 @@ def logout():
     session.pop('user_id', None)
     return redirect(url_for('index'))
 
+@app.route('/disciplina')
+def disciplina():
+    return render_template('disciplina.html')
+
 if __name__ == '__main__':
     app.run(debug=True)

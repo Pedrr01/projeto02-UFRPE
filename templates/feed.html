@@ -173,7 +173,7 @@
                 <div class="disciplina">
                     <h3>{{ disciplina['nome'] }}</h3>
                     <p>{{ disciplina['descricao'] }}</p>
-                    <a href="#">Acessar</a>
+                    <a href="{{ url_for('disciplina') }}">Acessar</a>
                 </div>
             {% endfor %}
         </div>
