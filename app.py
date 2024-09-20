@@ -68,10 +68,14 @@ def login():
 
     if user:
         session['user_id'] = user['id']
-        return redirect(url_for('feed'))
+        # Verifica se o usuário é o admin
+        if email == 'adm@ufrpe.br':
+            return redirect(url_for('admin'))  # Redireciona para a página admin
+        return redirect(url_for('feed'))  # Redireciona para a página feed
     else:
         return render_template('index.html', error="Conta não cadastrada")
 
+    
 @app.route('/feed', methods=['GET', 'POST'])
 def feed():
     if 'user_id' not in session:

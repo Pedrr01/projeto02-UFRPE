@@ -179,10 +179,12 @@
         </div>
         <div class="add-disciplina-container">
             <button class="show-input-btn" onclick="showDisciplinaInput()">Cadastrar Nova Disciplina</button>
-            <div id="disciplina-input" class="disciplina-input">
-                <input type="text" id="disciplina-name" placeholder="Nome da Disciplina">
-                <textarea id="disciplina-desc" placeholder="Descrição"></textarea>
-                <button onclick="addDisciplina()">Cadastrar</button>
+            <div id="disciplina-input" class="disciplina-input" style="display: none;">
+                <form method="POST" action="{{ url_for('feed') }}">
+                    <input type="text" name="disciplina_name" placeholder="Nome da Disciplina" required>
+                    <textarea name="disciplina_desc" placeholder="Descrição"></textarea>
+                    <button type="submit">Cadastrar</button>
+                </form>
             </div>
         </div>
     </div>    
