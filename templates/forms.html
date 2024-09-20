@@ -86,12 +86,12 @@
         <form id="formularioCadastro" action="/register" method="POST">
             <br>
             <div class="caixaInput">
-                <input type="text" name="name" id="nome" class="inputUsuario" required>
+                <input type="text" name="name" id="nome" class="inputUsuario" value="{{ name if name else '' }}" required>
                 <label for="nome" class="labelInput">Nome de Usuário</label>
             </div>
             <br><br>
             <div class="caixaInput">
-                <input type="email" name="email" id="email" class="inputUsuario" required>
+                <input type="email" name="email" id="email" class="inputUsuario" value="{{ email if email else '' }}" required>
                 <label for="email" class="labelInput">Email</label>
                 {% if error and 'domínio' in error %}
                     <div class="mensagemErro">{{ error }}</div>
@@ -115,17 +115,17 @@
             </div>
             <br><br>
             <div class="caixaInput">
-                <input type="text" name="faculdade" id="faculdade" class="inputUsuario" required>
+                <input type="text" name="faculdade" id="faculdade" class="inputUsuario" value="{{ faculdade if faculdade else '' }}" required>
                 <label for="faculdade" class="labelInput">Faculdade</label>
             </div>
             <br><br>
             <div class="caixaInput">
-                <input type="text" name="curso" id="curso" class="inputUsuario" required>
+                <input type="text" name="curso" id="curso" class="inputUsuario" value="{{ curso if curso else '' }}" required>
                 <label for="curso" class="labelInput">Curso</label>
             </div>
             <br><br>
             <div class="caixaInput">
-                <input type="text" name="periodo" id="periodo" class="inputUsuario" required>
+                <input type="text" name="periodo" id="periodo" class="inputUsuario" value="{{ periodo if periodo else '' }}" required>
                 <label for="periodo" class="labelInput">Período</label>
             </div>
             <br><br>
@@ -135,6 +135,5 @@
             <a href="/">Voltar</a>
         </div>
     </div>
-
 </body>
 </html>

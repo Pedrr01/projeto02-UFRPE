@@ -26,6 +26,9 @@ def register():
         email = request.form['email']
         password = request.form['password']
         confirm_password = request.form['confirm_password']
+        faculdade = request.form['faculdade']
+        curso = request.form['curso']
+        periodo = request.form['periodo']
 
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -34,14 +37,14 @@ def register():
         user = cursor.fetchone()
 
         if user:
-            return render_template('forms.html', error="Usuário já cadastrado")
+            return render_template('forms.html', error="Usuário já cadastrado", name=name, email=email, faculdade=faculdade, curso=curso, periodo=periodo)
         if password != confirm_password:
-            return render_template('forms.html', error="Senhas não coincidem")
+            return render_template('forms.html', error="Senhas não coincidem", name=name, email=email, faculdade=faculdade, curso=curso, periodo=periodo)
         if not email.endswith('@ufrpe.br'):
-            return render_template('forms.html', error="O e-mail deve ser do domínio @ufrpe.br")
+            return render_template('forms.html', error="O e-mail deve ser do domínio @ufrpe.br", name=name, email=email, faculdade=faculdade, curso=curso, periodo=periodo)
 
-        cursor.execute('INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
-                       (name, email, password))
+        cursor.execute('INSERT INTO users (name, email, password, faculdade, curso, periodo) VALUES (?, ?, ?, ?, ?, ?)',
+                       (name, email, password, faculdade, curso, periodo))
         conn.commit()
         conn.close()
         return redirect(url_for('success'))
@@ -177,5 +180,3 @@ def logout():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
