@@ -10,6 +10,11 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+def get_disciplina_db_connection():
+    conn = sqlite3.connect(os.path.join('database', 'disciplinas.db'))
+    conn.row_factory = sqlite3.Row
+    return conn
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -25,7 +30,6 @@ def register():
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        # Verificar se o e-mail já está cadastrado
         cursor.execute('SELECT * FROM users WHERE email = ?', (email,))
         user = cursor.fetchone()
 
@@ -60,26 +64,33 @@ def login():
     conn.close()
 
     if user:
-        session['user_id'] = user['id']  # Armazenar o ID do usuário na sessão
-        if email == 'adm@ufrpe.br':
-            return redirect(url_for('admin'))
+        session['user_id'] = user['id']
         return redirect(url_for('feed'))
     else:
         return render_template('index.html', error="Conta não cadastrada")
 
-@app.route('/feed')
+@app.route('/feed', methods=['GET', 'POST'])
 def feed():
     if 'user_id' not in session:
         return redirect(url_for('index'))
 
     user_id = session['user_id']
-    conn = get_db_connection()
+    conn = get_disciplina_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
-    user = cursor.fetchone()
+
+    if request.method == 'POST':
+        nome = request.form.get('disciplina_name')
+        descricao = request.form.get('disciplina_desc')
+
+        if nome:
+            cursor.execute('INSERT INTO disciplinas (nome, descricao) VALUES (?, ?)', (nome, descricao))
+            conn.commit()
+
+    cursor.execute('SELECT * FROM disciplinas')
+    disciplinas = cursor.fetchall()
     conn.close()
 
-    return render_template('feed.html', user=user)
+    return render_template('feed.html', user=user_id, disciplinas=disciplinas)
 
 @app.route('/dashboard/<int:user_id>', methods=['GET', 'POST'])
 def dashboard(user_id):
@@ -129,10 +140,9 @@ def admin():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Verificar se o usuário logado é o administrador
     cursor.execute('SELECT * FROM users WHERE id = ?', (session['user_id'],))
     user = cursor.fetchone()
-    
+
     if user['email'] != 'adm@ufrpe.br':
         conn.close()
         return redirect(url_for('feed'))
@@ -155,7 +165,7 @@ def admin_login():
     password = request.form['password']
 
     if email == 'adm@ufrpe.br' and password == 'adm':
-        session['user_id'] = 1  # ID do admin, ajuste conforme necessário
+        session['user_id'] = 1  # ID do admin
         return redirect(url_for('admin'))
     else:
         return redirect(url_for('index', error="Credenciais inválidas"))
@@ -167,3 +177,5 @@ def logout():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+

@@ -39,7 +39,7 @@
             cursor: pointer;
             color: white;
             transition: background-color 0.3s;
-            text-decoration: none; /* Remover sublinhado */
+            text-decoration: none; 
         }
         .settings-btn:hover {
             background-color: rgba(255, 255, 255, 0.2);
@@ -91,22 +91,43 @@
             display: none;
             margin-top: 10px;
         }
-        .disciplina-input input {
+        .disciplina-input input,
+        .disciplina-input textarea {
             padding: 10px;
             width: 300px;
-            border-radius: 5px;
+            border-radius: 10px;
             border: 1px solid #ccc;
+            margin: 10px auto; /* Centraliza e espaça os inputs */
+            display: block; /* Faz com que os inputs fiquem em bloco */
+            transition: border-color 0.3s;
+        }
+        .disciplina-input input:focus,
+        .disciplina-input textarea:focus {
+            border-color: rgb(0, 92, 197);
+            outline: none;
         }
         .disciplina-input button {
             padding: 10px 20px;
             border: none;
             background-color: rgb(0, 92, 197);
             color: white;
-            border-radius: 5px;
+            border-radius: 10px;
             cursor: pointer;
-            margin-left: 10px;
+            margin-top: 10px;
         }
         .disciplina-input button:hover {
+            background-color: rgb(0, 80, 172);
+        }
+        .show-input-btn {
+            padding: 10px 20px;
+            border: none;
+            background-color: rgb(0, 92, 197);
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .show-input-btn:hover {
             background-color: rgb(0, 80, 172);
         }
     </style>
@@ -116,28 +137,26 @@
         }
 
         function addDisciplina() {
-            // Obter o nome da nova disciplina
-            var disciplinaNome = document.querySelector('.disciplina-input input').value;
+            var disciplinaNome = document.querySelector('#disciplina-name').value;
+            var disciplinaDesc = document.querySelector('#disciplina-desc').value;
 
             if (disciplinaNome.trim() === "") {
                 alert("O nome da disciplina não pode estar vazio.");
                 return;
             }
 
-            // Criar um novo elemento de disciplina
             var newDisciplina = document.createElement('div');
             newDisciplina.className = 'disciplina';
             newDisciplina.innerHTML = `
                 <h3>${disciplinaNome}</h3>
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+                <p>${disciplinaDesc}</p>
                 <a href="disciplina.html">Acessar</a>
             `;
 
-            // Adicionar a nova disciplina ao feed
             document.querySelector('.feed').appendChild(newDisciplina);
-
-            // Limpar o campo de entrada
-            document.querySelector('.disciplina-input input').value = '';
+            document.querySelector('#disciplina-name').value = '';
+            document.querySelector('#disciplina-desc').value = '';
+            document.getElementById('disciplina-input').style.display = 'none';
         }
     </script>
 </head>
@@ -150,29 +169,22 @@
     </div>
     <div class="container">
         <div class="feed">
-            <div class="disciplina">
-                <h3>Disciplina 01</h3>
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-                <a href="disciplina.html">Acessar</a>
-            </div>
-            <div class="disciplina">
-                <h3>Disciplina 02</h3>
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-                <a href="disciplina.html">Acessar</a>
-            </div>
-            <div class="disciplina">
-                <h3>Disciplina 03</h3>
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-                <a href="disciplina.html">Acessar</a>
-            </div>
+            {% for disciplina in disciplinas %}
+                <div class="disciplina">
+                    <h3>{{ disciplina['nome'] }}</h3>
+                    <p>{{ disciplina['descricao'] }}</p>
+                    <a href="#">Acessar</a>
+                </div>
+            {% endfor %}
         </div>
         <div class="add-disciplina-container">
-            <button class="settings-btn" onclick="showDisciplinaInput()">Cadastrar Nova Disciplina</button>
+            <button class="show-input-btn" onclick="showDisciplinaInput()">Cadastrar Nova Disciplina</button>
             <div id="disciplina-input" class="disciplina-input">
-                <input type="text" placeholder="Nome da Disciplina">
+                <input type="text" id="disciplina-name" placeholder="Nome da Disciplina">
+                <textarea id="disciplina-desc" placeholder="Descrição"></textarea>
                 <button onclick="addDisciplina()">Cadastrar</button>
             </div>
         </div>
-    </div>
+    </div>    
 </body>
 </html>
