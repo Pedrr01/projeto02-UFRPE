@@ -56,7 +56,10 @@
             <input type="text" name="name" value="{{ user['name'] }}" placeholder="Nome" required>
             <input type="email" name="email" value="{{ user['email'] }}" placeholder="E-mail" required>
             <input type="password" name="password" placeholder="Nova Senha" required>
+            <input type="Curso" name="name" value="{{ user['Curso'] }}" placeholder="Novo Curso" required>
+            <input type="Periodo" name="Periodo" value="{{ user['Periodo'] }}" placeholder="Novo Periodo" required>
             <button type="submit">Salvar Alterações</button>
+            <button type="button" onclick="window.history.back()">Voltar</button>
         </form>
     </div>
 </body>
