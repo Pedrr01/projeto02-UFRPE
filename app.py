@@ -68,10 +68,9 @@ def login():
 
     if user:
         session['user_id'] = user['id']
-        # Verifica se o usuário é o admin
         if email == 'adm@ufrpe.br':
-            return redirect(url_for('admin'))  # Redireciona para a página admin
-        return redirect(url_for('feed'))  # Redireciona para a página feed
+            return redirect(url_for('admin'))  
+        return redirect(url_for('feed'))  
     else:
         return render_template('index.html', error="Conta não cadastrada")
 
@@ -132,7 +131,7 @@ def edit(user_id):
                        (name, email, password, user_id))
         conn.commit()
         conn.close()
-        return redirect(url_for('dashboard', user_id=user_id))
+        return redirect(url_for('admin'))  
 
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -172,7 +171,7 @@ def admin_login():
     password = request.form['password']
 
     if email == 'adm@ufrpe.br' and password == 'adm':
-        session['user_id'] = 1  # ID do admin
+        session['user_id'] = 1  
         return redirect(url_for('admin'))
     else:
         return redirect(url_for('index', error="Credenciais inválidas"))

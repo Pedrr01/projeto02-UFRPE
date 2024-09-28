@@ -66,7 +66,24 @@
         .user button:hover {
             background-color: rgba(255, 0, 0, 0.7);
         }
+        .edit-btn {
+            background-color: rgba(0, 255, 0, 0.5);
+            margin-right: 10px;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .edit-btn:hover {
+            background-color: rgba(0, 255, 0, 0.7);
+        }
     </style>
+    <script>
+        function confirmDelete() {
+            return confirm("Você tem certeza que deseja excluir este usuário?");
+        }
+    </script>
 </head>
 <body>
     <div class="header">
@@ -79,11 +96,16 @@
             {% for user in users %}
                 <div class="user">
                     <div>{{ user['name'] }} ({{ user['email'] }})</div>
-                    {% if user['email'] != 'adm@ufrpe.br' %}
-                        <form method="POST" action="{{ url_for('admin') }}" style="display:inline;">
+                    <div>
+                        <form method="GET" action="{{ url_for('edit', user_id=user['id']) }}" style="display:inline;">
+                            <button type="submit" class="edit-btn">Editar</button>
+                        </form>
+                        {% if user['email'] != 'adm@ufrpe.br' %}
+                        <form method="POST" action="{{ url_for('admin') }}" style="display:inline;" onsubmit="return confirmDelete();">
                             <button type="submit" name="delete" value="{{ user['id'] }}">Excluir</button>
                         </form>
-                    {% endif %}
+                        {% endif %}
+                    </div>
                 </div>
             {% endfor %}
         </div>
