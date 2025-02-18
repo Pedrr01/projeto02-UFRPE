@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 import MySQLdb
 import os
 import smtplib
@@ -32,9 +32,17 @@ def get_disciplina_db_connection():
 @app.route('/')
 def index():
     return render_template('index.html')
-def send_email(to_email):
-    subject = "Cadastro realizado com sucesso"
-    body = "Cadastro realizado com sucesso, seja bem-vindo à plataforma CampusLink"
+def send_email(to_email,to_name):
+    subject = "Bem-vindo(a) ao CampusLink – Sua Jornada Começa Agora!"
+    body = f"""
+    Olá, {to_name}, seu cadastro foi realizado com sucesso!\n
+    É com grande entusiasmo que damos as boas-vindas ao CampusLink!
+    Aqui, você terá acesso a uma plataforma feita para conectar universitários como você, 
+    proporcionando um espaço de aprendizado colaborativo, troca de conhecimento e crescimento acadêmico.\n
+    - Conecte-se com colegas e mentores.
+    - Acesse materiais e conteúdos exclusivos.
+    - Participe de debates e projetos incríveis.
+    """
     sender_email = "campuslink2025@gmail.com"  
     sender_password = "odsk ptio tofb leqq"  
     
@@ -80,7 +88,7 @@ def register():
         conn.commit()
         conn.close()
         
-        send_email(email)  # Envia o e-mail após o cadastro
+        send_email(email, name)  
         
         return redirect(url_for('success'))
     return render_template('forms.html')
@@ -283,6 +291,33 @@ def disciplina():
     conn.close()
 
     return render_template('disciplina.html', erro=erro, sucesso=sucesso, publicacoes=publicacoes)
+
+@app.route('/recuperar_senha')
+def recuperar_senha():
+    return render_template('recuperar_senha.html')
+
+@app.route('/verificar_recuperacao', methods=['POST'])
+def verificar_recuperacao():
+    email = request.form['email']
+    
+    conn = get_db_connection()
+    cursor = conn.cursor(MySQLdb.cursors.DictCursor)
+    
+    try:
+        cursor.execute('SELECT * FROM users WHERE email = %s', (email,))
+        user = cursor.fetchone()
+
+        if user:
+            flash('Verifique seu email e siga as instruções', 'success')
+        else:
+            flash('Usuário Não Cadastrado', 'error')
+    except Exception as e:
+        flash(f'Ocorreu um erro: {str(e)}', 'error')
+    finally:
+        conn.close()
+    
+    return redirect(url_for('recuperar_senha'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)
