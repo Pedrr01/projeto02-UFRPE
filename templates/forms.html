@@ -19,11 +19,10 @@
         }
         .caixa {
             color: white;
-            position: relative;
             background-color: rgba(0, 0, 0, 0.6);
-            padding: 15px;
+            padding: 20px;
             border-radius: 15px;
-            width: 40%; /* Ajustei para mais espaço */
+            width: 40%;
             text-align: center;
         }
         .profile-picture {
@@ -38,7 +37,7 @@
             justify-content: center;
             align-items: center;
         }
-        .profile-picture img, .profile-picture i {
+        .profile-picture img {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -53,54 +52,43 @@
             opacity: 0;
             cursor: pointer;
         }
-        .profile-picture::after {
-            content: "Clique para adicionar foto";
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0, 0, 0, 0.6);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-        }
         .caixaInput {
             position: relative;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            text-align: left;
         }
         .inputUsuario {
+            width: 100%;
             background: none;
             border: none;
             border-bottom: 1px solid white;
             outline: none;
             color: white;
-            font-size: 15px;
-            width: 100%;
-            letter-spacing: 2px;
+            font-size: 16px;
+            padding: 5px;
         }
         .labelInput {
             position: absolute;
-            top: 0px;
-            left: 0px;
-            pointer-events: none;
-            transition: .5s;
+            top: 5px;
+            left: 5px;
+            transition: .3s;
+            color: white;
         }
         .inputUsuario:focus ~ .labelInput,
         .inputUsuario:valid ~ .labelInput {
-            top: -20px;
+            top: -15px;
             font-size: 12px;
             color: dodgerblue;
         }
         #botaoCadastrar {
-            background-image: linear-gradient(to right, rgb(0, 92, 197), rgb(90, 20, 220));
             width: 100%;
             border: none;
             padding: 15px;
             color: white;
-            font-size: 15px;
+            font-size: 16px;
             cursor: pointer;
             border-radius: 10px;
+            background-image: linear-gradient(to right, rgb(0, 92, 197), rgb(90, 20, 220));
         }
         #botaoCadastrar:hover {
             background-image: linear-gradient(to right, rgb(0, 80, 172), rgb(80, 19, 195));
@@ -121,84 +109,57 @@
         }
         a:hover {
             text-decoration: underline;
-            color: rgb(200, 200, 200);
         }
     </style>
 </head>
 <body>
     <div class="caixa">
         <form id="formularioCadastro" action="/register" method="POST" enctype="multipart/form-data">
-            <!-- Foto de Perfil -->
             <div class="profile-picture">
                 <img src="default-profile.png" alt="Foto de Perfil" id="profile-img" style="display: none;">
-                <i class="fas fa-user" id="profile-icon"></i>
                 <input type="file" name="profile_picture" accept="image/*" onchange="loadFile(event)">
             </div>
-            <br>
-
-            <!-- Campos do Usuário -->
+            
             <div class="caixaInput">
-                <input type="text" name="name" id="nome" class="inputUsuario" value="{{ name if name else '' }}" required>
+                <input type="text" name="name" id="nome" class="inputUsuario" required>
                 <label for="nome" class="labelInput">Nome de Usuário</label>
             </div>
-            <br><br>
             <div class="caixaInput">
-                <input type="email" name="email" id="email" class="inputUsuario" value="{{ email if email else '' }}" required>
+                <input type="email" name="email" id="email" class="inputUsuario" required>
                 <label for="email" class="labelInput">Email</label>
-                {% if error and ('domínio' in error or 'Usuário já cadastrado' in error) %}
-                    <div class="mensagemErro">{{ error }}</div>
-                {% endif %}
             </div>
-            <br><br>
             <div class="caixaInput">
                 <input type="password" name="password" id="senha" class="inputUsuario" required>
                 <label for="senha" class="labelInput">Senha</label>
             </div>
-            <br><br>
             <div class="caixaInput">
                 <input type="password" name="confirm_password" id="confirmacao_senha" class="inputUsuario" required>
                 <label for="confirmacao_senha" class="labelInput">Confirmação de Senha</label>
-                {% if error and 'Senhas' in error %}
-                    <div class="mensagemErro">{{ error }}</div>
-                {% endif %}
             </div>
-            <br><br>
-            
-            <!-- Campos adicionais -->
             <div class="caixaInput">
-                <input type="text" name="faculdade" id="faculdade" class="inputUsuario" value="{{ faculdade if faculdade else '' }}" required>
+                <input type="text" name="faculdade" id="faculdade" class="inputUsuario" required>
                 <label for="faculdade" class="labelInput">Faculdade</label>
             </div>
-            <br><br>
             <div class="caixaInput">
-                <input type="text" name="curso" id="curso" class="inputUsuario" value="{{ curso if curso else '' }}" required>
+                <input type="text" name="curso" id="curso" class="inputUsuario" required>
                 <label for="curso" class="labelInput">Curso</label>
             </div>
-            <br><br>
             <div class="caixaInput">
-                <input type="text" name="periodo" id="periodo" class="inputUsuario" value="{{ periodo if periodo else '' }}" required>
+                <input type="text" name="periodo" id="periodo" class="inputUsuario" required>
                 <label for="periodo" class="labelInput">Período</label>
             </div>
-            <br><br>
             
-            <!-- Botão de Cadastro -->
-            <input type="submit" name="botaoCadastrar" id="botaoCadastrar" value="Cadastrar">
+            <input type="submit" id="botaoCadastrar" value="Cadastrar">
         </form>
         <div class="containerAncora">
             <a href="/">Voltar</a>
         </div>
     </div>
 
-    <!-- Link para a biblioteca de ícones -->
-    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
-
     <script>
-        // Função para mostrar a imagem ao carregar
         var loadFile = function(event) {
             var output = document.getElementById('profile-img');
-            var icon = document.getElementById('profile-icon');
             output.style.display = 'block';
-            icon.style.display = 'none';
             output.src = URL.createObjectURL(event.target.files[0]);
         };
     </script>

@@ -2,91 +2,146 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="img/iconNav.png" type="image/x-icon">
-    <title>Painel de Administração - Campus Link</title>
+    <title>Painel Administrativo - CampusLink</title>
     <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
             background-image: linear-gradient(to right, rgb(20, 147, 220), rgb(17, 54, 71));
-            margin: 0;
-            padding: 0;
+            color: white;
         }
-        .header {
-            background-color: rgba(0, 0, 0, 0.8);
+        .container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.6);
             padding: 20px;
+            border-radius: 15px;
+            width: 80%; /* Aumentei a largura para melhorar a visualização */
+            max-width: 800px; /* Limite máximo de largura */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .section {
+            margin-top: 20px;
+        }
+        .list {
+            list-style: none;
+            padding: 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .list-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            color: white;
         }
-        .site-title {
-            font-size: 24px;
-            font-weight: bold;
+        .delete-btn {
+            background-image: linear-gradient(to right, rgb(0, 92, 197), rgb(90, 20, 220));
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .delete-btn:hover {
+            background-image: linear-gradient(to right, rgb(0, 80, 172), rgb(80, 19, 195));
+        }
+        .action-btn {
+            background-image: linear-gradient(to right, rgb(0, 92, 197), rgb(90, 20, 220));
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        .action-btn:hover {
+            background-image: linear-gradient(to right, rgb(0, 80, 172), rgb(80, 19, 195));
         }
         .logout-btn {
-            background-color: rgba(255, 255, 255, 0.1);
-            border: none;
+            background-image: linear-gradient(to right, rgb(120, 120, 120), rgb(170, 170, 170));
+            display: block;
+            margin-top: 20px;
             padding: 10px;
             border-radius: 10px;
-            cursor: pointer;
+            text-decoration: none;
             color: white;
-            transition: background-color 0.3s;
+            font-size: 15px;
+            text-align: center;
         }
         .logout-btn:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-        .container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 20px;
-            color: white;
-        }
-        .user-list {
-            background-color: rgba(0, 0, 0, 0.6);
-            padding: 15px;
-            border-radius: 15px;
-        }
-        .user {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .user button {
-            background-color: rgba(255, 0, 0, 0.5);
-            border: none;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .user button:hover {
-            background-color: rgba(255, 0, 0, 0.7);
+            background-image: linear-gradient(to right, rgb(100, 100, 100), rgb(150, 150, 150));
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="site-title">CampusLink - Admin</div>
+
+    <div class="container">
+        <h1>Painel Administrativo</h1>
+
+        <!-- Seção de Usuários -->
+        <div class="section">
+            <h2>Usuários Cadastrados</h2>
+            <ul class="list">
+                {% for user in users %}
+                    <li class="list-item">
+                        <span>{{ user['name'] }} ({{ user['email'] }})</span>
+                        {% if user['email'] != 'adm@ufrpe.br' %}
+                            <form method="POST" action="{{ url_for('admin') }}" style="display: inline;">
+                                <button type="submit" class="delete-btn" name="delete_user" value="{{ user['id'] }}">Excluir</button>
+                            </form>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Seção de Disciplinas -->
+        <div class="section">
+            <h2>Disciplinas Cadastradas</h2>
+            <ul class="list">
+                {% for disciplina in disciplinas %}
+                    <li class="list-item">
+                        <span>{{ disciplina['name'] }}</span>
+                        <form method="POST" action="{{ url_for('admin') }}" style="display: inline;">
+                            <button type="submit" class="delete-btn" name="delete_disciplina" value="{{ disciplina['id'] }}">Excluir</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Seção de Solicitações de Disciplinas -->
+        <div class="section">
+            <h2>Solicitações de Disciplinas</h2>
+            <ul class="list">
+                {% for solicitacao in solicitacoes %}
+                    <li class="list-item">
+                        <span>{{ solicitacao['name'] }} - {{ solicitacao['descricao'] }}</span>
+                        <form method="POST" action="{{ url_for('gerenciar_solicitacao') }}" style="display: inline;">
+                            <input type="hidden" name="solicitacao_id" value="{{ solicitacao['id'] }}">
+                            <button type="submit" class="action-btn" name="acao" value="aprovar">Aprovar</button>
+                            <button type="submit" class="action-btn" name="acao" value="rejeitar">Rejeitar</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Botão de Logout -->
         <a href="{{ url_for('logout') }}" class="logout-btn">Sair</a>
     </div>
-    <div class="container">
-        <div class="user-list">
-            <h2>Usuários Cadastrados</h2>
-            {% for user in users %}
-                <div class="user">
-                    <div>{{ user['name'] }} ({{ user['email'] }})</div>
-                    {% if user['email'] != 'adm@ufrpe.br' %}
-                        <form method="POST" action="{{ url_for('admin') }}" style="display:inline;">
-                            <button type="submit" name="delete" value="{{ user['id'] }}">Excluir</button>
-                        </form>
-                    {% endif %}
-                </div>
-            {% endfor %}
-        </div>
-    </div>
+
 </body>
 </html>

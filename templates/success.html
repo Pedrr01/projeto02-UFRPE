@@ -14,14 +14,18 @@
             text-align: center;
             padding-top: 50px;
         }
-        a {
+        a, button {
             color: white;
             text-decoration: none;
             font-size: 18px;
             margin-top: 20px;
             display: inline-block;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
         }
-        a:hover {
+        a:hover, button:hover {
             text-decoration: underline;
             color: rgb(200, 200, 200);
         }
@@ -29,6 +33,29 @@
 </head>
 <body>
     <h1>Cadastro realizado com sucesso!</h1>
+    <p>Enviamos um e-mail de confirmação. Verifique sua caixa de entrada e siga as instruções para ativar sua conta.</p>
+    <p>Se não encontrar o e-mail, verifique a pasta de spam ou clique abaixo para reenviar.</p>
+    <button onclick="reenviarEmail()">Reenviar E-mail de Confirmação</button>
+    <br><br>
     <a href="/">Voltar para Login</a>
+
+    <script>
+        function reenviarEmail() {
+            // Substitua 'emailDoUsuario' com a variável contendo o e-mail cadastrado
+            fetch('/reenviar-confirmacao', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: 'emailDoUsuario' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message || 'E-mail de confirmação reenviado com sucesso!');
+            })
+            .catch(error => {
+                console.error('Erro ao reenviar e-mail:', error);
+                alert('Ocorreu um erro. Tente novamente.');
+            });
+        }
+    </script>
 </body>
 </html>

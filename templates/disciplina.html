@@ -225,7 +225,16 @@
         <div class="visualizar-btn-container">
             <button onclick="window.location.href='/publicacoes';">Visualizar Publicações</button>
         </div>
-
+        <div class="add-disciplina-container">
+            <button class="show-input-btn" onclick="showDisciplinaInput()">Solicitar Nova Disciplina</button>
+            <div id="disciplina-input" class="disciplina-input" style="display: none;">
+                <form method="POST" action="{{ url_for('solicitar_disciplina') }}">
+                    <input type="text" name="disciplina_name" placeholder="Nome da Disciplina" required>
+                    <textarea name="disciplina_desc" placeholder="Descrição" required></textarea>
+                    <button type="submit">Solicitar</button>
+                </form>
+            </div>
+        </div>
         <!-- Botão de Voltar -->
         <button class="back-button" onclick="window.history.back()">Voltar</button>
     </div>

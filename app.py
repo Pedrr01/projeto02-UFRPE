@@ -1,12 +1,15 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash,jsonify
 import MySQLdb
 import os
 import smtplib
+from flask import url_for
 from email.mime.text import MIMEText
+import jwt
+import datetime
 
 app = Flask(__name__)
 app.secret_key = '1110'
-
+SECRET_KEY = os.getenv("SECRET_KEY", "chave_secreta_segura")
 # Função para conectar ao banco de dados de usuários
 def get_db_connection():
     conn = MySQLdb.connect(
@@ -28,21 +31,45 @@ def get_disciplina_db_connection():
     )
     conn.autocommit = True
     return conn
+def generate_confirmation_token(email):
+    return jwt.encode(
+        {'email': email, 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)},
+        SECRET_KEY,
+        algorithm="HS256"
+    )
 
+def confirm_token(token):
+    try:
+        data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return data['email']
+    except:
+        return False
+
+    
 @app.route('/')
 def index():
     return render_template('index.html')
 def send_email(to_email):
-    subject = "Cadastro realizado com sucesso"
-    body = "Cadastro realizado com sucesso, seja bem-vindo à plataforma CampusLink"
-    sender_email = "campuslink2025@gmail.com"  
-    sender_password = "odsk ptio tofb leqq"  
-    
-    msg = MIMEText(body)
+    token = generate_confirmation_token(to_email)
+    confirm_url = url_for('confirm_email', token=token, _external=True)
+    subject = "Confirme seu cadastro no CampusLink"
+    body = f"""
+    <html>
+    <body>
+        <p>Bem-vindo ao CampusLink! Confirme seu e-mail para ativar sua conta.</p>
+        <p><a href="{confirm_url}">Clique aqui para confirmar seu e-mail</a></p>
+    </body>
+    </html>
+    """
+
+    sender_email = "campuslink2025@gmail.com"
+    sender_password = "odsk ptio tofb leqq"
+
+    msg = MIMEText(body, "html")
     msg['Subject'] = subject
     msg['From'] = sender_email
     msg['To'] = to_email
-    
+
     try:
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
@@ -51,6 +78,33 @@ def send_email(to_email):
         server.quit()
     except Exception as e:
         print(f"Erro ao enviar e-mail: {e}")
+@app.route('/confirmar_email/<token>')
+def confirm_email(token):
+    email = confirm_token(token)
+    if not email:
+        return "Token inválido ou expirado!", 400
+    
+    conn = get_db_connection()
+    cursor = conn.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("UPDATE users SET confirmado = TRUE WHERE email = %s", (email,))
+    conn.commit()
+    conn.close()
+    
+    return "E-mail confirmado com sucesso! Você pode fazer login agora.", 200       
+
+@app.route('/cadastro-realizado', methods=['GET'])
+def cadastro_realizado():
+    email = "exemplo@dominio.com"  # Isso deve vir do banco ou da sessão, dependendo do seu fluxo
+    return render_template('cadastro_realizado.html', email=email)
+@app.route('/reenviar-confirmacao', methods=['POST'])
+def reenviar_confirmacao():
+    data = request.get_json()
+    email = data.get('email')
+    
+    # Aqui você pode chamar sua função para reenviar o e-mail
+    # send_email(email)  # Exemplo de como você poderia enviar o e-mail
+    
+    return jsonify({'message': 'E-mail de confirmação reenviado com sucesso!'})
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -75,15 +129,21 @@ def register():
         if not email.endswith('@ufrpe.br'):
             return render_template('forms.html', error="O e-mail deve ser do domínio @ufrpe.br", name=name, email=email, faculdade=faculdade, curso=curso, periodo=periodo)
 
-        cursor.execute('INSERT INTO users (name, email, password, faculdade, curso, periodo) VALUES (%s, %s, %s, %s, %s, %s)', 
-                       (name, email, password, faculdade, curso, periodo))
+        # Condição para conta admin
+        if email == 'adm@ufrpe.br':
+            cursor.execute('INSERT INTO users (name, email, password, faculdade, curso, periodo, confirmado) VALUES (%s, %s, %s, %s, %s, %s, %s)', 
+                           (name, email, password, faculdade, curso, periodo, True))
+        else:
+            cursor.execute('INSERT INTO users (name, email, password, faculdade, curso, periodo, confirmado) VALUES (%s, %s, %s, %s, %s, %s, %s)', 
+                           (name, email, password, faculdade, curso, periodo, False))
+            send_email(email)  # Envia o e-mail apenas para contas não administrativas
+        
         conn.commit()
         conn.close()
-        
-        send_email(email)  # Envia o e-mail após o cadastro
-        
+
         return redirect(url_for('success'))
     return render_template('forms.html')
+
 
 @app.route('/success')
 def success():
@@ -93,18 +153,24 @@ def success():
 def login():
     email = request.form['email']
     password = request.form['password']
+    
     conn = get_db_connection()
     cursor = conn.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM users WHERE email = %s AND password = %s', (email, password))
     user = cursor.fetchone()
     conn.close()
+
     if user:
+        if not user['confirmado']:
+            return render_template('index.html', error="Confirme seu e-mail antes de fazer login")
+        
         session['user_id'] = user['id']
         if email == 'adm@ufrpe.br':
             return redirect(url_for('admin'))
         return redirect(url_for('feed'))
     else:
         return render_template('index.html', error="Conta não cadastrada")
+
 
 @app.route('/feed', methods=['GET', 'POST'])
 def feed():
@@ -192,24 +258,37 @@ def admin():
     conn = get_db_connection()
     cursor = conn.cursor(MySQLdb.cursors.DictCursor)
 
+    # Verificar se o usuário é admin
     cursor.execute('SELECT * FROM users WHERE id = %s', (session['user_id'],))
     user = cursor.fetchone()
-
     if user['email'] != 'adm@ufrpe.br':
         conn.close()
         return redirect(url_for('feed'))
 
+    # Exclusão de usuários
     if request.method == 'POST':
-        if 'delete' in request.form:
-            user_id_to_delete = request.form['delete']
+        if 'delete_user' in request.form:
+            user_id_to_delete = request.form['delete_user']
             cursor.execute('DELETE FROM users WHERE id = %s', (user_id_to_delete,))
             conn.commit()
 
+    # Buscar usuários cadastrados
     cursor.execute('SELECT * FROM users')
     users = cursor.fetchall()
+
+    # Buscar disciplinas cadastradas
+    cursor.execute('SELECT * FROM disciplinas')
+    disciplinas = cursor.fetchall()
+
+    # Buscar solicitações de disciplinas
+    cursor.execute('SELECT * FROM solicitacoes_disciplinas WHERE status = "pendente"')
+    solicitacoes = cursor.fetchall()
+
+    # Fechar conexão
     conn.close()
 
-    return render_template('admin.html', users=users)
+    # Renderizar o template com os dados
+    return render_template('admin.html', users=users, disciplinas=disciplinas, solicitacoes=solicitacoes)
 
 @app.route('/admin_login', methods=['POST'])
 def admin_login():
@@ -226,6 +305,60 @@ def admin_login():
 def logout():
     session.pop('user_id', None)
     return redirect(url_for('index'))
+
+@app.route('/solicitar_disciplina', methods=['POST'])
+def solicitar_disciplina():
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+
+    name = request.form.get('disciplina_name')
+    descricao = request.form.get('disciplina_desc')
+
+    if not name or not descricao:
+        flash("Preencha todos os campos!", "error")
+        return redirect(url_for('feed'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute(
+        'INSERT INTO solicitacoes_disciplinas (name, descricao) VALUES (%s, %s)',
+        (name, descricao)
+    )
+    conn.commit()
+    conn.close()
+
+    flash("Solicitação enviada com sucesso! Aguarde aprovação.", "success")
+    return redirect(url_for('feed'))
+
+@app.route('/gerenciar_solicitacao', methods=['POST'])
+def gerenciar_solicitacao():
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+
+    solicitacao_id = request.form.get('solicitacao_id')
+    acao = request.form.get('acao')  # 'aprovar' ou 'rejeitar'
+
+    conn = get_db_connection()
+    cursor = conn.cursor(MySQLdb.cursors.DictCursor)
+
+    if acao == 'aprovar':
+        cursor.execute('SELECT * FROM solicitacoes_disciplinas WHERE id = %s', (solicitacao_id,))
+        solicitacao = cursor.fetchone()
+        if solicitacao:
+            cursor.execute(
+                'INSERT INTO disciplinas (name, descricao) VALUES (%s, %s)',
+                (solicitacao['name'], solicitacao['descricao'])
+            )
+            cursor.execute('DELETE FROM solicitacoes_disciplinas WHERE id = %s', (solicitacao_id,))
+            conn.commit()
+            flash("Disciplina aprovada com sucesso!", "success")
+    elif acao == 'rejeitar':
+        cursor.execute('DELETE FROM solicitacoes_disciplinas WHERE id = %s', (solicitacao_id,))
+        conn.commit()
+        flash("Solicitação rejeitada.", "warning")
+
+    conn.close()
+    return redirect(url_for('admin'))
 
 @app.route('/disciplina', methods=['GET', 'POST'])
 def disciplina():
