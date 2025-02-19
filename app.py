@@ -4,12 +4,23 @@ import os
 import smtplib
 from flask import url_for
 from email.mime.text import MIMEText
-import jwt
+import jwt 
 import datetime
+
 
 app = Flask(__name__)
 app.secret_key = '1110'
-SECRET_KEY = os.getenv("SECRET_KEY", "chave_secreta_segura")
+SECRET_KEY = "123456"
+
+def generate_confirmation_token(email):
+    payload = {
+        "email": email,
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=24)  # Expira em 24h
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+
+
+
 # Função para conectar ao banco de dados de usuários
 def get_db_connection():
     conn = MySQLdb.connect(
@@ -21,6 +32,15 @@ def get_db_connection():
     conn.autocommit = True
     return conn
 
+def confirm_token(token):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return payload["email"]  # Retorna o e-mail contido no token
+    except jwt.ExpiredSignatureError:
+        return None  # Token expirado
+    except jwt.InvalidTokenError:
+        return None  # Token inválido
+
 # Função para conectar ao banco de dados de disciplinas
 def get_disciplina_db_connection():
     conn = MySQLdb.connect(
@@ -31,30 +51,22 @@ def get_disciplina_db_connection():
     )
     conn.autocommit = True
     return conn
-def generate_confirmation_token(email):
-    return jwt.encode(
-        {'email': email, 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)},
-        SECRET_KEY,
-        algorithm="HS256"
-    )
+    
 
-def confirm_token(token):
-    try:
-        data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        return data['email']
-    except:
-        return False
 
     
 @app.route('/')
 def index():
     return render_template('index.html')
 def send_email(to_email):
-    subject = "Cadastro realizado com sucesso"
-    body = "Cadastro realizado com sucesso, seja bem-vindo à plataforma CampusLink"
-    sender_email = "campuslink2025@gmail.com"  
-    sender_password = "odsk ptio tofb leqq"  
+    token = generate_confirmation_token(to_email)
+    confirmation_link = f"http://127.0.0.1:5000/confirmar/{token}"
     
+    subject = "Confirme seu e-mail"
+    body = f"Olá, clique no link abaixo para confirmar seu e-mail:\n{confirmation_link}"
+    sender_email = "campuslink2025@gmail.com"
+    sender_password = "odsk ptio tofb leqq"
+
     msg = MIMEText(body)
     msg['Subject'] = subject
     msg['From'] = sender_email
@@ -67,34 +79,41 @@ def send_email(to_email):
         server.sendmail(sender_email, to_email, msg.as_string())
         server.quit()
     except Exception as e:
-        print(f"Erro ao enviar e-mail: {e}")
-@app.route('/confirmar_email/<token>')
-def confirm_email(token):
-    email = confirm_token(token)
-    if not email:
-        return "Token inválido ou expirado!", 400
-    
-    conn = get_db_connection()
-    cursor = conn.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute("UPDATE users SET confirmado = TRUE WHERE email = %s", (email,))
-    conn.commit()
-    conn.close()
-    
-    return "E-mail confirmado com sucesso! Você pode fazer login agora.", 200       
+        print(f"Erro ao enviar e-mail: {e}")   
 
 @app.route('/cadastro-realizado', methods=['GET'])
 def cadastro_realizado():
     email = "exemplo@dominio.com"  # Isso deve vir do banco ou da sessão, dependendo do seu fluxo
     return render_template('cadastro_realizado.html', email=email)
+
+
+@app.route('/confirmar/<token>')
+def confirmar_email(token):
+    email = confirm_token(token)  # Função para decodificar o token
+    if not email:
+        return "Token inválido ou expirado", 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Atualiza os campos 'confirmado' e 'is_confirmed' para 1
+    cursor.execute('UPDATE users SET confirmado = 1 WHERE email = %s', (email,))
+    conn.commit()
+    conn.close()
+    
+    return "E-mail confirmado com sucesso! Agora você pode fazer login."
+
+
 @app.route('/reenviar-confirmacao', methods=['POST'])
 def reenviar_confirmacao():
     data = request.get_json()
     email = data.get('email')
     
-    # Aqui você pode chamar sua função para reenviar o e-mail
-    # send_email(email)  # Exemplo de como você poderia enviar o e-mail
+    if email:
+        send_email(email)  # Reenviando o e-mail com o link de confirmação
+        return jsonify({'message': 'E-mail de confirmação reenviado com sucesso!'})
     
-    return jsonify({'message': 'E-mail de confirmação reenviado com sucesso!'})
+    return jsonify({'error': 'E-mail não fornecido'}), 400
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -119,19 +138,13 @@ def register():
         if not email.endswith('@ufrpe.br'):
             return render_template('forms.html', error="O e-mail deve ser do domínio @ufrpe.br", name=name, email=email, faculdade=faculdade, curso=curso, periodo=periodo)
 
-        # Condição para conta admin
-        if email == 'adm@ufrpe.br':
-            cursor.execute('INSERT INTO users (name, email, password, faculdade, curso, periodo, confirmado) VALUES (%s, %s, %s, %s, %s, %s, %s)', 
-                           (name, email, password, faculdade, curso, periodo, True))
-        else:
-            cursor.execute('INSERT INTO users (name, email, password, faculdade, curso, periodo, confirmado) VALUES (%s, %s, %s, %s, %s, %s, %s)', 
-                           (name, email, password, faculdade, curso, periodo, False))
-            send_email(email)  # Envia o e-mail apenas para contas não administrativas
+        cursor.execute('INSERT INTO users (name, email, password, faculdade, curso, periodo, confirmado) VALUES (%s, %s, %s, %s, %s, %s, %s)', 
+                       (name, email, password, faculdade, curso, periodo, False))
         
         conn.commit()
         conn.close()
         
-        send_email(email)  # Envia o e-mail após o cadastro
+        send_email(email)  # Envia o e-mail de confirmação
         
         return redirect(url_for('success'))
     return render_template('forms.html')
@@ -318,8 +331,6 @@ def solicitar_disciplina():
     )
     conn.commit()
     conn.close()
-
-    flash("Solicitação enviada com sucesso! Aguarde aprovação.", "success")
     return redirect(url_for('feed'))
 
 @app.route('/gerenciar_solicitacao', methods=['POST'])
@@ -343,7 +354,7 @@ def gerenciar_solicitacao():
             )
             cursor.execute('DELETE FROM solicitacoes_disciplinas WHERE id = %s', (solicitacao_id,))
             conn.commit()
-            flash("Disciplina aprovada com sucesso!", "success")
+        
     elif acao == 'rejeitar':
         cursor.execute('DELETE FROM solicitacoes_disciplinas WHERE id = %s', (solicitacao_id,))
         conn.commit()
@@ -434,6 +445,7 @@ def verificar_recuperacao():
         conn.close()
     
     return redirect(url_for('recuperar_senha'))
+
 
 
 if __name__ == '__main__':
