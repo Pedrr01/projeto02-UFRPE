@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session,jsonify,flash
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
 import MySQLdb
 import os
 import smtplib
@@ -6,10 +6,12 @@ from flask import url_for
 from email.mime.text import MIMEText
 import jwt
 import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = '1110'
 SECRET_KEY = os.getenv("SECRET_KEY", "chave_secreta_segura")
+
 # Função para conectar ao banco de dados de usuários
 def get_db_connection():
     conn = MySQLdb.connect(
@@ -21,16 +23,6 @@ def get_db_connection():
     conn.autocommit = True
     return conn
 
-# Função para conectar ao banco de dados de disciplinas
-def get_disciplina_db_connection():
-    conn = MySQLdb.connect(
-        host='campuslink.cnaw2608ajs2.us-east-1.rds.amazonaws.com',
-        user='CampusLink',
-        password='13020101',
-        database='campuslink_integrado'
-    )
-    conn.autocommit = True
-    return conn
 def generate_confirmation_token(email):
     return jwt.encode(
         {'email': email, 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)},
@@ -118,14 +110,16 @@ def register():
             return render_template('forms.html', error="Senhas não coincidem", name=name, email=email, faculdade=faculdade, curso=curso, periodo=periodo)
         if not email.endswith('@ufrpe.br'):
             return render_template('forms.html', error="O e-mail deve ser do domínio @ufrpe.br", name=name, email=email, faculdade=faculdade, curso=curso, periodo=periodo)
+        
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
 
         # Condição para conta admin
         if email == 'adm@ufrpe.br':
             cursor.execute('INSERT INTO users (name, email, password, faculdade, curso, periodo, confirmado) VALUES (%s, %s, %s, %s, %s, %s, %s)', 
-                           (name, email, password, faculdade, curso, periodo, True))
+                           (name, email, hashed_password, faculdade, curso, periodo, True))
         else:
             cursor.execute('INSERT INTO users (name, email, password, faculdade, curso, periodo, confirmado) VALUES (%s, %s, %s, %s, %s, %s, %s)', 
-                           (name, email, password, faculdade, curso, periodo, False))
+                           (name, email, hashed_password, faculdade, curso, periodo, False))
             send_email(email)  # Envia o e-mail apenas para contas não administrativas
         
         conn.commit()
@@ -148,11 +142,14 @@ def login():
     
     conn = get_db_connection()
     cursor = conn.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute('SELECT * FROM users WHERE email = %s AND password = %s', (email, password))
+    cursor.execute('SELECT * FROM users WHERE email = %s', (email))
     user = cursor.fetchone()
     conn.close()
 
     if user:
+        if not check_password_hash(user['password'], password):  
+            return render_template('index.html', error="Senha incorreta")
+        
         if not user['confirmado']:
             return render_template('index.html', error="Confirme seu e-mail antes de fazer login")
         
@@ -170,7 +167,7 @@ def feed():
         return redirect(url_for('index'))
 
     user_id = session['user_id']
-    conn = get_disciplina_db_connection()
+    conn = get_db_connection()
     cursor = conn.cursor(MySQLdb.cursors.DictCursor)
 
     if request.method == 'POST':
@@ -223,16 +220,18 @@ def edit(user_id):
             conn.close()
             return "Usuário não encontrado", 404
 
-        if user['password'] != old_password:
+        if not check_password_hash(user['password'], old_password):
             conn.close()
             return render_template('editar.html', user=user, error="Senha antiga incorreta")
 
         if new_password != confirm_password:
             conn.close()
             return render_template('editar.html', user=user, error="As novas senhas não coincidem")
+        
+        hashed_password = generate_password_hash(new_password, method='pbkdf2:sha256')
 
         cursor.execute('UPDATE users SET name = %s, email = %s, password = %s WHERE id = %s',
-                       (name, email, new_password, user_id))
+                       (name, email, hashed_password, user_id))
         conn.commit()
         conn.close()
         return redirect(url_for('dashboard', user_id=user_id))
@@ -354,7 +353,7 @@ def gerenciar_solicitacao():
 
 @app.route('/disciplina', methods=['GET', 'POST'])
 def disciplina():
-    conn = get_disciplina_db_connection()
+    conn = get_db_connection()
     cursor = conn.cursor(MySQLdb.cursors.DictCursor)
 
     erro = None
